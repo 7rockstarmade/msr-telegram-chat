@@ -1,0 +1,4 @@
+me/rockstarmade/msrtelegramchat/MsrTelegramChatPlugin.class
+me/rockstarmade/msrtelegramchat/TelegramService.class
+me/rockstarmade/msrtelegramchat/TelegramPollingService.class
+me/rockstarmade/msrtelegramchat/ChatListener.class

@@ -1,0 +1,7 @@
+name: MsrTelegramChat
+version: 1.0.0
+main: me.rockstarmade.msrtelegramchat.MsrTelegramChatPlugin
+api-version: '1.21'
+commands:
+  msrtg:
+    description: Reload plugin

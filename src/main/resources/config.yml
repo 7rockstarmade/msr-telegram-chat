@@ -1,0 +1,11 @@
+telegram:
+  enabled: true
+  bot-token: "PUT_TOKEN_HERE"
+  chat-id: "PUT_CHAT_ID_HERE"
+  send-delay-ticks: 20
+  receive-enabled: true
+  poll-interval-ticks: 40
+
+format:
+  message: "[MC] {player}: {message}"
+  telegram-message: "[TG] {user}: {message}"
