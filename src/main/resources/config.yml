@@ -2,7 +2,11 @@ telegram:
   enabled: true
   bot-token: "PUT_TOKEN_HERE"
   chat-id: "PUT_CHAT_ID_HERE"
-  send-delay-ticks: 20
+  sender-interval-ms: 250
+  sender-batch-size: 3
+  send-timeout-seconds: 8
+  max-queue-size: 500
+  requeue-failed-messages: false
   receive-enabled: true
   poll-interval-ticks: 40
 

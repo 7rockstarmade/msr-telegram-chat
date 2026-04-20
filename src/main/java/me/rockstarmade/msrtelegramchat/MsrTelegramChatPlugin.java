@@ -7,12 +7,17 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class MsrTelegramChatPlugin extends JavaPlugin {
 
     private TelegramPollingService pollingService;
+    private TelegramService telegramService;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
+
+        telegramService = new TelegramService(this);
         pollingService = new TelegramPollingService(this);
+
         getServer().getPluginManager().registerEvents(new ChatListener(this), this);
+
         boolean enabled = getConfig().getBoolean("telegram.enabled", true);
         String token = getConfig().getString("telegram.bot-token", "");
         String chatId = getConfig().getString("telegram.chat-id", "");
@@ -22,6 +27,7 @@ public class MsrTelegramChatPlugin extends JavaPlugin {
         getLogger().info("Telegram bot token configured: " + isConfigured(token));
         getLogger().info("Telegram chat id configured: " + isConfigured(chatId) + " (" + describeChatId(chatId) + ")");
 
+        telegramService.start();
         getServer().getScheduler().runTaskAsynchronously(this, () -> TelegramService.diagnose(this));
         pollingService.start();
     }
@@ -31,6 +37,13 @@ public class MsrTelegramChatPlugin extends JavaPlugin {
         if (pollingService != null) {
             pollingService.stop();
         }
+        if (telegramService != null) {
+            telegramService.stop();
+        }
+    }
+
+    public TelegramService getTelegramService() {
+        return telegramService;
     }
 
     @Override
@@ -48,21 +61,15 @@ public class MsrTelegramChatPlugin extends JavaPlugin {
             reloadConfig();
             sender.sendMessage("MsrTelegramChat config reloaded");
             getLogger().info("Config reloaded by " + sender.getName());
+            telegramService.start();
             getServer().getScheduler().runTaskAsynchronously(this, () -> TelegramService.diagnose(this));
             pollingService.start();
             return true;
         }
 
         if (args[0].equalsIgnoreCase("test")) {
-            sender.sendMessage("Sending Telegram test message. Check server log for the result.");
-            getServer().getScheduler().runTaskAsynchronously(this,
-                    () -> {
-                        boolean sent = TelegramService.send(this, "[MC] Telegram bridge test");
-                        getServer().getScheduler().runTask(this,
-                                () -> sender.sendMessage(sent
-                                        ? "Telegram test message sent"
-                                        : "Telegram test message failed"));
-                    });
+            telegramService.enqueue("[MC] Telegram bridge test");
+            sender.sendMessage("Telegram test message queued");
             return true;
         }
 
