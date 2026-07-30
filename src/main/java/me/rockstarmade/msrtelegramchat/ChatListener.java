@@ -5,6 +5,7 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.PlayerDeathEvent;
 
 public class ChatListener implements Listener {
 
@@ -33,5 +34,20 @@ public class ChatListener implements Listener {
                 .replace("{message}", msg);
 
         plugin.getTelegramService().enqueue(text);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onDeath(PlayerDeathEvent event) {
+        if (!plugin.getConfig().getBoolean("telegram.enabled", true)) {
+            return;
+        }
+
+        if (event.deathMessage() == null) {
+            return;
+        }
+
+        String deathMessage = plainTextSerializer.serialize(event.deathMessage());
+
+        plugin.getTelegramService().enqueue(deathMessage);
     }
 }

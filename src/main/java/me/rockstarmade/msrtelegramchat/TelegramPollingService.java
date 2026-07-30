@@ -178,16 +178,21 @@ public class TelegramPollingService {
             return "unknown";
         }
 
+        String firstName = getString(from, "first_name");
+        String lastName = getString(from, "last_name");
+
+        String fullName = (
+                (firstName == null ? "" : firstName) +
+                        (lastName == null ? "" : " " + lastName)
+        ).trim();
+
+        if (!fullName.isBlank()) {
+            return fullName;
+        }
+
         String username = getString(from, "username");
         if (username != null && !username.isBlank()) {
             return "@" + username;
-        }
-
-        String firstName = getString(from, "first_name");
-        String lastName = getString(from, "last_name");
-        String fullName = ((firstName == null ? "" : firstName) + " " + (lastName == null ? "" : lastName)).trim();
-        if (!fullName.isBlank()) {
-            return fullName;
         }
 
         return getString(from, "id", "unknown");
