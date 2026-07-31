@@ -113,10 +113,12 @@ public class TelegramPollingService {
                 continue;
             }
 
-            String username = formatUser(from);
-            String format = plugin.getConfig().getString("format.telegram-message", "[TG] {user}: {message}");
-            String minecraftMessage = format
-                    .replace("{user}", username)
+            String format = plugin.getConfig().getString(
+                    "format.telegram-message",
+                    "[TG] {user}: {message}"
+            );
+
+            String minecraftMessage = applyTelegramPlaceholders(format, from)
                     .replace("{message}", text.replace('\n', ' '));
 
             plugin.getServer().getScheduler().runTask(plugin,
@@ -173,29 +175,43 @@ public class TelegramPollingService {
         return chat.get("id").getAsString();
     }
 
-    private String formatUser(JsonObject from) {
+    private String resolveDisplayName(JsonObject from) {
         if (from == null) {
             return "unknown";
         }
 
-        String firstName = getString(from, "first_name");
-        String lastName = getString(from, "last_name");
+        String firstName = getString(from, "first_name", "");
+        String lastName = getString(from, "last_name", "");
+        String username = getString(from, "username", "");
 
-        String fullName = (
-                (firstName == null ? "" : firstName) +
-                        (lastName == null ? "" : " " + lastName)
-        ).trim();
+        String fullName = (firstName + " " + lastName).trim();
 
         if (!fullName.isBlank()) {
             return fullName;
         }
 
-        String username = getString(from, "username");
-        if (username != null && !username.isBlank()) {
+        if (!username.isBlank()) {
             return "@" + username;
         }
 
         return getString(from, "id", "unknown");
+    }
+
+    private String applyTelegramPlaceholders(String format, JsonObject from) {
+        String fallback = resolveDisplayName(from);
+
+        String username = getString(from, "username", "");
+        String firstName = getString(from, "first_name", "");
+        String lastName = getString(from, "last_name", "");
+
+        String fullName = (firstName + " " + lastName).trim();
+
+        return format
+                .replace("{user}", fallback)
+                .replace("{username}", username.isBlank() ? fallback : "@" + username)
+                .replace("{first_name}", firstName.isBlank() ? fallback : firstName)
+                .replace("{last_name}", lastName.isBlank() ? fallback : lastName)
+                .replace("{full_name}", fullName.isBlank() ? fallback : fullName);
     }
 
     private static JsonObject getObject(JsonObject object, String key) {
